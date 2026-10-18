@@ -1,0 +1,35 @@
+{
+  "name": "mindhealth-assistant",
+  "version": "1.0.0",
+  "description": "MindCare AI — Privacy-First Mental Wellness Assistant with RAG",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js",
+    "rag:ingest": "python rag/ingest.py",
+    "rag:evaluate": "python rag/evaluate.py"
+  },
+  "keywords": [
+    "mental-health",
+    "rag",
+    "wellness",
+    "ai",
+    "cbt",
+    "express",
+    "mongodb"
+  ],
+  "author": "MindCare AI Team",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.3.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.4.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.2"
+  }
+}

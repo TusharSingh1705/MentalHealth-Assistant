@@ -1,0 +1,169 @@
+/* ============================================
+   MindCare AI — Sharp Minimalist SOS Styles
+   ============================================ */
+
+.sos-page {
+  padding-top: calc(var(--header-h) + var(--space-6));
+  padding-bottom: var(--space-12);
+}
+
+/* ---------- Emergency Banner ---------- */
+.sos-banner {
+  background: var(--bg-secondary);
+  border: 1px solid var(--rose-200);
+  border-left: 4px solid var(--rose-600);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  margin-bottom: var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+[data-theme="dark"] .sos-banner {
+  border-color: var(--rose-900);
+  border-left-color: var(--rose-600);
+}
+
+.sos-banner__content {
+  max-width: 580px;
+}
+
+.sos-banner__title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--rose-700);
+}
+
+[data-theme="dark"] .sos-banner__title {
+  color: var(--rose-400);
+}
+
+.sos-banner__text {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.sos-banner__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ---------- Helpline Cards Grid ---------- */
+.helplines-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.helpline-card {
+  padding: 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  transition: border-color var(--transition-fast);
+}
+
+.helpline-card:hover {
+  border-color: var(--primary-400);
+}
+
+.helpline-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.helpline-card__name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.helpline-card__number {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--primary-700);
+  margin-bottom: 8px;
+}
+
+.helpline-card__number a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.helpline-card__number a:hover {
+  text-decoration: underline;
+}
+
+.helpline-card__description {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 16px;
+  flex: 1;
+}
+
+.helpline-card__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+
+/* ---------- Trusted Contact ---------- */
+.trusted-contact {
+  padding: 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-6);
+}
+
+.trusted-contact__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.trusted-contact__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.trusted-contact__form {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.trusted-contact__form .form-group {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .sos-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .helplines-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .trusted-contact__form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

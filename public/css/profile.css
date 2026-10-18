@@ -1,0 +1,199 @@
+/* ============================================
+   MindCare AI — Profile Page Styles
+   ============================================ */
+
+.profile-page {
+  padding-top: calc(var(--header-h) + var(--space-8));
+  padding-bottom: var(--space-16);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* ---------- Profile Header ---------- */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  padding: var(--space-8);
+  margin-bottom: var(--space-6);
+}
+
+.profile-header__avatar {
+  position: relative;
+}
+
+.profile-header__avatar-change {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--primary-500);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xs);
+  cursor: pointer;
+  border: 2px solid var(--bg-secondary);
+  transition: all var(--transition-fast);
+}
+
+.profile-header__avatar-change:hover {
+  transform: scale(1.1);
+}
+
+.profile-header__info {
+  flex: 1;
+}
+
+.profile-header__name {
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  margin-bottom: var(--space-1);
+}
+
+.profile-header__email {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.profile-header__joined {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  margin-top: var(--space-1);
+}
+
+/* ---------- Profile Sections ---------- */
+.profile-section {
+  padding: var(--space-6);
+  margin-bottom: var(--space-4);
+}
+
+.profile-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.profile-section__title {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.profile-form__row {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.profile-form__row > .form-group {
+  flex: 1;
+}
+
+/* Preferences */
+.preference-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.preference-item:last-child {
+  border-bottom: none;
+}
+
+.preference-item__label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.preference-item__description {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+/* Toggle switch */
+.toggle-switch {
+  position: relative;
+  width: 48px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-switch__slider {
+  position: absolute;
+  inset: 0;
+  background: var(--border-strong);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.toggle-switch__slider::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  top: 3px;
+  left: 3px;
+  transition: transform var(--transition-fast);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.toggle-switch input:checked + .toggle-switch__slider {
+  background: var(--primary-500);
+}
+
+.toggle-switch input:checked + .toggle-switch__slider::before {
+  transform: translateX(22px);
+}
+
+/* Danger zone */
+.danger-zone {
+  border-color: rgba(240, 101, 149, 0.2);
+}
+
+.danger-zone .profile-section__title {
+  color: var(--rose-500);
+}
+
+.danger-zone__text {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-4);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile-form__row {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Chat with MentalHealth Assistant — Evidence-grounded mental wellness assistant.">
+  <title>Chat — MentalHealth Assistant</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/chat.css">
+</head>
+<body>
+  <div class="bg-gradient-animated"></div>
+
+  <header class="header" id="header">
+    <div class="header__inner">
+      <a href="index.html" class="header__brand">
+        <div class="header__logo">
+          <svg width="34" height="28" viewBox="0 0 40 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 3C20 3 25.5 10.5 25.5 19C25.5 23.5 23 27 20 27C17 27 14.5 23.5 14.5 19C14.5 10.5 20 3 20 3Z" fill="#2A835F"/>
+            <path d="M13 9.5C13 9.5 17.5 15.5 17.5 21C17.5 24.5 15.5 26.5 13 26.5C10 26.5 7 24 7 20C7 15 13 9.5 13 9.5Z" fill="#12544F" opacity="0.95"/>
+            <path d="M27 9.5C27 9.5 22.5 15.5 22.5 21C22.5 24.5 24.5 26.5 27 26.5C30 26.5 33 24 33 20C33 15 27 9.5 27 9.5Z" fill="#12544F" opacity="0.95"/>
+            <path d="M6 16C6 16 10.5 20 10.5 24.5C10.5 27 8.5 28 6 28C3 28 1 26 1 23C1 19 6 16 6 16Z" fill="#8BBB92" opacity="0.9"/>
+            <path d="M34 16C34 16 29.5 20 29.5 24.5C29.5 27 31.5 28 34 28C37 28 39 26 39 23C39 19 34 16 34 16Z" fill="#092328" opacity="0.9"/>
+          </svg>
+        </div>
+        <div class="header__brand-text">
+          <span class="header__title">MentalHealth</span>
+          <span class="header__subtitle">ASSISTANT</span>
+        </div>
+      </a>
+
+      <div class="header__right">
+        <nav class="header__nav" id="headerNav">
+          <a href="index.html" class="header__link" data-page="home">Home</a>
+          <a href="chat.html" class="header__link active" data-page="chat">Chat</a>
+          <a href="mindfulness.html" class="header__link" data-page="mindfulness">Mindfulness</a>
+          <a href="sos.html" class="header__link" data-page="sos">SOS</a>
+          <a href="profile.html" class="header__link" data-page="profile">Profile</a>
+        </nav>
+
+        <div class="header__actions">
+          <button class="theme-toggle-pill" id="themeToggle" aria-label="Toggle theme">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+          <a href="login.html" class="header-btn--signin" id="loginBtn">Sign In</a>
+          <a href="profile.html" class="avatar avatar--sm hidden" id="profileAvatar" title="Profile">U</a>
+          <button class="header-btn--signin hidden" id="logoutBtn">Logout</button>
+        </div>
+      </div>
+
+      <button class="header__hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <nav class="mobile-nav" id="mobileNav">
+    <a href="index.html" class="mobile-nav__link">Home</a>
+    <a href="chat.html" class="mobile-nav__link">Chat</a>
+    <a href="mindfulness.html" class="mobile-nav__link">Mindfulness</a>
+    <a href="sos.html" class="mobile-nav__link">SOS</a>
+    <a href="profile.html" class="mobile-nav__link">Profile</a>
+    <hr style="border-color: var(--border-light); margin: var(--space-2) 0;">
+    <a href="login.html" class="mobile-nav__link" id="mobileLogin">Log In</a>
+    <a href="register.html" class="mobile-nav__link" id="mobileSignup">Sign Up</a>
+  </nav>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <main class="chat-page">
+    <aside class="chat-sidebar" id="chatSidebar">
+      <div class="chat-sidebar__header">
+        <button class="chat-sidebar__new-btn" id="newChatBtn">
+          <span>+</span>
+          <span>New Chat</span>
+        </button>
+        <div class="chat-sidebar__section-heading">Conversations</div>
+      </div>
+
+      <div class="chat-sidebar__list" id="conversationList">
+        <div class="empty-state" id="noConversations" style="padding: 24px 12px; text-align: center;">
+          <p class="empty-state__title" style="font-size: var(--text-xs); color: var(--text-tertiary);">No prior conversations</p>
+        </div>
+      </div>
+
+      <div class="chat-sidebar__footer">
+        <a href="sos.html" class="chat-sidebar__footer-link">
+          <span>Emergency Support (SOS)</span>
+        </a>
+      </div>
+    </aside>
+
+    <div class="chat-main">
+      <div class="chat-main__header">
+        <div class="chat-main__title" style="display: flex; align-items: center; gap: 8px;">
+          <button class="chat-sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">&lt;</button>
+          <span id="chatTitle">New Conversation</span>
+          <button class="btn btn--ghost btn--icon-sm" id="renameChatHeaderBtn" title="Rename conversation" style="padding: 4px; display: inline-flex; align-items: center; justify-content: center; color: var(--text-tertiary);" aria-label="Rename conversation">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+            </svg>
+          </button>
+        </div>
+        <div class="chat-main__actions">
+          <button class="btn btn--sm btn--ghost" id="clearChatBtn">Clear</button>
+        </div>
+      </div>
+
+      <div class="chat-messages" id="chatMessages">
+        <div class="chat-welcome" id="chatWelcome">
+          <h2 class="chat-welcome__title">How are you feeling in this moment?</h2>
+          <p class="chat-welcome__text">
+            MentalHealth Assistant provides evidence-grounded wellness support and self-care techniques. Choose a topic below or type your message to begin.
+          </p>
+          <div class="chat-welcome__suggestions">
+            <button class="chat-welcome__suggestion" data-query="I've been feeling stressed about my work and exams lately. What are some evidence-based coping strategies?">
+              Stress & Exam Pressure
+            </button>
+            <button class="chat-welcome__suggestion" data-query="Can you guide me through a quick breathing exercise for anxiety relief?">
+              Guided Calming Breath
+            </button>
+            <button class="chat-welcome__suggestion" data-query="I am having trouble sleeping at night. What are some sleep hygiene recommendations?">
+              Sleep & Insomnia Tips
+            </button>
+            <button class="chat-welcome__suggestion" data-query="I feel disconnected and overwhelmed. How can I practice grounding right now?">
+              Grounding & Sensory Reset
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-input-area">
+        <div class="chat-input-wrapper">
+          <textarea class="chat-input" id="chatInput" 
+                    placeholder="Ask MentalHealth Assistant anything..." 
+                    rows="1" 
+                    aria-label="Chat message input"></textarea>
+          <button class="chat-send-btn" id="chatSendBtn" aria-label="Send message" title="Send message">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="modal-overlay" id="deleteConvModal">
+    <div class="modal" style="padding: 24px; max-width: 420px; border-radius: var(--radius-md); border: 1px solid var(--border-medium); background: var(--bg-secondary);">
+      <div class="modal__header" style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+        <h3 class="modal__title" style="font-size: 1.1rem; font-weight: 700; color: var(--rose-700);">Delete Conversation</h3>
+        <button class="btn btn--ghost btn--icon-sm" id="deleteConvModalClose" aria-label="Close">✕</button>
+      </div>
+      <p style="font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.5; margin-bottom: 20px;">
+        Are you sure you want to delete this conversation? This action cannot be undone.
+      </p>
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button class="btn btn--secondary btn--sm" id="deleteConvCancelBtn">Cancel</button>
+        <button class="btn btn--danger btn--sm" id="deleteConvConfirmBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="renameConvModal">
+    <div class="modal" style="padding: 24px; max-width: 420px; border-radius: var(--radius-md); border: 1px solid var(--border-medium); background: var(--bg-secondary);">
+      <div class="modal__header" style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+        <h3 class="modal__title" style="font-size: 1.1rem; font-weight: 700; color: var(--primary-700);">Rename Conversation</h3>
+        <button class="btn btn--ghost btn--icon-sm" id="renameConvModalClose" aria-label="Close">✕</button>
+      </div>
+      <p style="font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.5; margin-bottom: 12px;">
+        Enter a new title for this conversation:
+      </p>
+      <input type="text" class="form-input" id="renameConvInput" placeholder="Conversation Title" maxlength="50" style="margin-bottom: 20px; width: 100%;">
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button class="btn btn--secondary btn--sm" id="renameConvCancelBtn">Cancel</button>
+        <button class="btn btn--primary btn--sm" id="renameConvConfirmBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/chat.js"></script>
+</body>
+</html>

@@ -1,0 +1,201 @@
+/* ============================================
+   MindCare AI — Privacy Page Styles
+   ============================================ */
+
+.privacy-page {
+  padding-top: calc(var(--header-h) + var(--space-8));
+  padding-bottom: var(--space-16);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.privacy-page-header {
+  text-align: center;
+  margin-bottom: var(--space-12);
+}
+
+.privacy-page-header__icon {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-2xl);
+  background: rgba(32, 201, 151, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-3xl);
+  margin: 0 auto var(--space-4);
+}
+
+.privacy-page-header__title {
+  font-size: var(--text-3xl);
+  font-weight: 800;
+  margin-bottom: var(--space-2);
+}
+
+.privacy-page-header__subtitle {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+}
+
+/* ---------- Privacy Sections ---------- */
+.privacy-control-section {
+  padding: var(--space-6);
+  margin-bottom: var(--space-4);
+}
+
+.privacy-control-section__title {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  margin-bottom: var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.privacy-control-section__description {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-5);
+  line-height: 1.7;
+}
+
+/* Data controls */
+.data-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-light);
+  margin-bottom: var(--space-3);
+  transition: all var(--transition-fast);
+}
+
+.data-control:hover {
+  border-color: var(--border-medium);
+  background: var(--bg-tertiary);
+}
+
+.data-control__info {
+  flex: 1;
+}
+
+.data-control__label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.data-control__description {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+.data-control__count {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  padding: 2px 8px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-full);
+  margin-right: var(--space-3);
+}
+
+/* Retention info */
+.retention-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.retention-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--bg-tertiary);
+}
+
+.retention-item__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: var(--text-base);
+}
+
+.retention-item__icon--account {
+  background: rgba(92, 124, 250, 0.1);
+  color: var(--primary-500);
+}
+
+.retention-item__icon--guest {
+  background: rgba(252, 196, 25, 0.15);
+  color: var(--warm-600);
+}
+
+.retention-item__icon--chat {
+  background: rgba(32, 201, 151, 0.1);
+  color: var(--accent-500);
+}
+
+.retention-item__text {
+  flex: 1;
+}
+
+.retention-item__label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.retention-item__detail {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+/* Export data */
+.export-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.export-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-light);
+}
+
+.export-option__info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.export-option__icon {
+  font-size: var(--text-xl);
+}
+
+.export-option__label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+  .data-control {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .data-control__count {
+    margin-right: 0;
+  }
+}

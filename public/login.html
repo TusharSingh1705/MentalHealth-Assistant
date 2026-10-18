@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Log in to MentalHealth Assistant — Access your confidential conversations and evidence-based mental wellness tools.">
+  <title>Log in to your account — MentalHealth Assistant</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body class="auth-body">
+  <div class="bg-gradient-animated"></div>
+  <div class="toast-container" id="toastContainer"></div>
+
+  <div class="auth-page-wrapper">
+    <div class="auth-card">
+      <div class="auth-brand" aria-label="MentalHealth Assistant">
+        <div class="auth-brand__logo">
+          <svg width="34" height="28" viewBox="0 0 40 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 3C20 3 25.5 10.5 25.5 19C25.5 23.5 23 27 20 27C17 27 14.5 23.5 14.5 19C14.5 10.5 20 3 20 3Z" fill="#2A835F"/>
+            <path d="M13 9.5C13 9.5 17.5 15.5 17.5 21C17.5 24.5 15.5 26.5 13 26.5C10 26.5 7 24 7 20C7 15 13 9.5 13 9.5Z" fill="#12544F" opacity="0.95"/>
+            <path d="M27 9.5C27 9.5 22.5 15.5 22.5 21C22.5 24.5 24.5 26.5 27 26.5C30 26.5 33 24 33 20C33 15 27 9.5 27 9.5Z" fill="#12544F" opacity="0.95"/>
+            <path d="M6 16C6 16 10.5 20 10.5 24.5C10.5 27 8.5 28 6 28C3 28 1 26 1 23C1 19 6 16 6 16Z" fill="#8BBB92" opacity="0.9"/>
+            <path d="M34 16C34 16 29.5 20 29.5 24.5C29.5 27 31.5 28 34 28C37 28 39 26 39 23C39 19 34 16 34 16Z" fill="#092328" opacity="0.9"/>
+          </svg>
+        </div>
+        <div class="auth-brand__text">
+          <span class="auth-brand__title">MentalHealth</span>
+          <span class="auth-brand__subtitle">ASSISTANT</span>
+        </div>
+      </div>
+
+      <div class="auth-header">
+        <h1 class="auth-title">Log in to your account</h1>
+        <p class="auth-subtitle">
+          Don't have an account? <a href="register.html">Sign Up</a>
+        </p>
+      </div>
+
+      <form class="auth-form" id="loginForm" novalidate>
+        <div class="auth-field">
+          <label class="auth-label" for="loginEmail">Email Address</label>
+          <input type="email" class="auth-input" id="loginEmail" 
+                 placeholder="Enter your email" required autocomplete="email" autofocus>
+          <span class="auth-error" id="loginEmailError">Please enter a valid email address</span>
+        </div>
+
+        <div class="auth-field">
+          <label class="auth-label" for="loginPassword">Password</label>
+          <input type="password" class="auth-input" id="loginPassword" 
+                 placeholder="Enter your password" required autocomplete="current-password">
+          <span class="auth-error" id="loginPasswordError">Password is required</span>
+        </div>
+
+        <button type="submit" class="auth-btn-primary" id="loginSubmit">
+          Log In
+        </button>
+
+        <div class="auth-divider">
+          <span>or</span>
+        </div>
+
+        <a href="chat.html?guest=true" class="auth-btn-guest">
+          Continue as Guest
+        </a>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>
