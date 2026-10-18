@@ -17,7 +17,30 @@ MentalHealth Assistant is a privacy-first mental wellness web application. It pr
 
 - **Frontend**: HTML5, Vanilla CSS, JavaScript
 - **Backend**: Node.js, Express
+- **Database**: MongoDB (Mongoose ODM)
+- **Vector Database**: ChromaDB (RAG embedding store)
 - **RAG Pipeline**: Python, ChromaDB, Google Gemini API
+
+---
+
+## Database Architecture
+
+The application uses a dual-database design tailored for privacy, fast conversation retrieval, and evidence-grounded AI responses:
+
+### 1. MongoDB (Primary Datastore)
+- **Role**: Stores registered user profiles, authenticated credentials, preferences, emergency contacts, conversation history, and ephemeral guest sessions.
+- **Connection**: Managed via Mongoose (`server/config/db.js`). Configured through `MONGODB_URI` in `.env` (supports both local MongoDB and MongoDB Atlas).
+- **Graceful Fallback**: If MongoDB is unreachable locally, the server automatically degrades to an in-memory/client-side storage mode so you can continue testing without running a database daemon.
+- **Schemas & Models** (`server/models/`):
+  - **`User`**: Account info (hashed passwords with bcrypt), personal preferences (dark mode, citations, history retention), and emergency trusted contacts.
+  - **`GuestSession`**: Ephemeral sessions featuring a 24-hour TTL index (`expires: 86400`) to guarantee automatic deletion for guest privacy.
+  - **`Conversation`**: Conversation threads indexed by either `userId` or ephemeral `guestId`.
+  - **`Message`**: Individual messages with sender roles (`user`, `assistant`, `system`), crisis detection flags (`isCrisis`), and resource citations.
+
+### 2. ChromaDB (Vector Store)
+- **Role**: High-dimensional vector index for RAG (Retrieval-Augmented Generation) psychoeducational guidelines.
+- **Location**: Stored locally on disk at `./rag/chroma_db` (customizable via `CHROMA_DB_PATH`).
+- **Management**: Populated through `rag/ingest.py` and queried through `rag/pipeline.py`.
 
 ---
 
@@ -27,6 +50,7 @@ MentalHealth Assistant is a privacy-first mental wellness web application. It pr
 
 - Node.js (v18 or newer)
 - npm (v9 or newer)
+- MongoDB (Optional: local MongoDB Community Server or MongoDB Atlas cluster; in-memory fallback enabled if offline)
 
 ### Installation & Setup
 
