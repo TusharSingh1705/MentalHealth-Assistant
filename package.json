@@ -4,8 +4,8 @@
   "description": "MindCare AI — Privacy-First Mental Wellness Assistant with RAG",
   "main": "server/server.js",
   "scripts": {
-    "start": "node server/server.js",
     "dev": "nodemon server/server.js",
+    "start": "nodemon server/server.js",
     "rag:ingest": "python rag/ingest.py",
     "rag:evaluate": "python rag/evaluate.py"
   },

@@ -42,7 +42,7 @@ MentalHealth Assistant is a privacy-first mental wellness web application. It pr
 
 3. Start the application:
    ```bash
-   npm start
+   npm run dev
    ```
 
 4. Open `http://localhost:5000` in your browser.
