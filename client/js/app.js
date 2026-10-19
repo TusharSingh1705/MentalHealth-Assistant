@@ -1,6 +1,8 @@
 'use strict';
 
-const API_BASE = window.API_BASE_URL || '/api';
+const API_BASE = window.location.hostname.includes('vercel.app')
+  ? 'https://mentalhealth-assistant.onrender.com/api'
+  : (window.API_BASE_URL || '/api');
 
 const ThemeManager = {
   init() {
