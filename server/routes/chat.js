@@ -55,14 +55,24 @@ const KNOWLEDGE_BASE = [
 • 1 pleasant taste or conscious positive affirmation.`
   },
   {
-    topic: 'Behavioral Activation & Social Support',
-    source: 'Behavioral Activation for Emotional Well-Being',
-    keywords: ['lonely', 'isolated', 'empty', 'alone', 'motivation', 'hopeless', 'connection'],
-    content: `Behavioral activation emphasizes that action often precedes mood improvement rather than waiting for motivation to strike:
-1. Schedule a micro-activity that once brought a sense of mastery or connection (e.g., watering a plant, a 5-minute walk).
-2. Reach out to one trusted person with a low-pressure message.
-3. Practice self-compassion: Remind yourself that feelings of loneliness are temporary emotional states, not permanent identity traits.`
-  }
+      topic: 'Behavioral Activation & Low Mood Support',
+      source: 'Behavioral Activation for Emotional Well-Being',
+      keywords: ['lonely', 'isolated', 'empty', 'alone', 'motivation', 'hopeless', 'connection', 'low', 'sad', 'down', 'depressed', 'cry', 'crying', 'numb', 'blue', 'unhappy', 'mood', 'heavy'],
+      content: `Behavioral activation emphasizes that action often precedes mood improvement rather than waiting for motivation to strike:
+1. **Schedule a micro-activity**: Pick something small that once brought a sense of mastery or connection (e.g., watering a plant, washing your face, a 5-minute walk).
+2. **Reach out gently**: Send a low-pressure message to one trusted friend or family member.
+3. **Practice self-compassion**: Remind yourself that feeling low is a temporary emotional state, not a permanent reflection of your worth.`
+    },
+    {
+      topic: 'Academic, Exam & Performance Stress Management',
+      source: 'Academic Anxiety Management Protocol',
+      keywords: ['exam', 'exams', 'study', 'studying', 'test', 'tests', 'grades', 'score', 'revision', 'academic', 'college', 'school', 'marks'],
+      content: `When dealing with exam pressure and academic stress, evidence-based coping focuses on breaking down the overwhelm:
+1. **The Pomodoro Reset**: Study in focused 25-minute intervals with guaranteed 5-minute cognitive breaks (step away from screens and stretch).
+2. **Challenge Catastrophic Predictions**: An exam tests your recall on a specific day; it does not measure your intelligence, human worth, or ultimate potential.
+3. **Prioritize Non-Negotiables**: Aim for 7 hours of sleep before exam days; memory consolidation happens during sleep, not sleep-deprived cramming.
+4. **4-7-8 Centering Breath**: Inhale for 4 seconds, hold for 7, exhale gently for 8 before opening your study materials to lower adrenaline.`
+    }
 ];
 
 // Helper: Check for crisis
@@ -92,6 +102,7 @@ function retrieveKnowledge(query) {
 }
 
 const { queryRAG } = require('../services/ragService');
+const { generateAIResponse } = require('../services/geminiService');
 
 // POST /api/chat/message
 router.post('/message', chatLimiter, optionalAuth, async (req, res) => {
@@ -128,45 +139,46 @@ Please reach out to one of these numbers or a trusted loved one right now.`;
       reply = `Of course, I am right here and listening. Please feel free to share whatever is on your mind — whether you are going through a difficult situation, feeling stressed or low, or just need a safe space to express yourself. Take your time, I am here to support you.`;
       source = '';
     } else {
-      // Execute Retrieval-Augmented Generation (RAG) over knowledge base
+      // 1. Primary: Generate dynamic, conversational AI guidance via Gemini
       try {
-        const ragResult = await queryRAG(userText);
-        const isAbstention = !ragResult || !ragResult.reply ||
-          ragResult.reply.trim().length < 60 ||
-          ragResult.reply.includes("could not find enough information") ||
-          ragResult.reply.includes("documents provided to MentalHealth Assistant");
+        const aiReply = await generateAIResponse(userText, history);
+        if (aiReply && aiReply.trim().length > 20) {
+          reply = aiReply;
+        }
+      } catch (aiErr) {
+        console.warn('Direct AI generation error:', aiErr.message);
+      }
 
-        if (ragResult && ragResult.reply && !isAbstention) {
-          reply = ragResult.reply;
-          source = '';
-          citations = [];
-          if (ragResult.disclaimer) {
-            disclaimer = ragResult.disclaimer;
+      // 2. Secondary: If AI is unavailable or rate-limited, query local RAG pipeline
+      if (!reply) {
+        try {
+          const ragResult = await queryRAG(userText);
+          const isAbstention = !ragResult || !ragResult.reply ||
+            ragResult.reply.trim().length < 60 ||
+            ragResult.reply.includes("could not find enough information") ||
+            ragResult.reply.includes("documents provided to MentalHealth Assistant");
+
+          if (ragResult && ragResult.reply && !isAbstention) {
+            reply = ragResult.reply;
+            if (ragResult.disclaimer) {
+              disclaimer = ragResult.disclaimer;
+            }
+          } else {
+            const matchedDoc = retrieveKnowledge(userText);
+            if (matchedDoc) {
+              reply = `Thank you for sharing this. Based on evidence-grounded wellness strategies, here is guidance tailored to what you described:\n\n${matchedDoc.content}\n\nTake this one moment at a time. Would you like to try a gentle relaxation exercise together, or would you like to unpack any part of this?`;
+            } else {
+              reply = `I hear you, and I want to acknowledge what you are sharing. Even though every experience is unique, please remember that your feelings are completely valid and you do not have to carry everything alone.\n\nTake things one small step at a time. Would you like to share a little more about what has been on your mind, or would you like to try a calming grounding exercise together?`;
+            }
           }
-        } else {
-          // If RAG abstained or returned empty, check curated grounded knowledge base
+        } catch (ragErr) {
+          console.error('RAG service error, using safe fallback:', ragErr);
           const matchedDoc = retrieveKnowledge(userText);
           if (matchedDoc) {
-            source = "";
             reply = `Thank you for sharing this. Based on evidence-grounded wellness strategies, here is guidance tailored to what you described:\n\n${matchedDoc.content}\n\nTake this one moment at a time. Would you like to try a gentle relaxation exercise together, or would you like to unpack any part of this?`;
-          } else if (ragResult && ragResult.reply) {
-            reply = ragResult.reply;
-            source = "";
           } else {
-            reply = "I could not find enough information to answer this question in the documents provided to MentalHealth Assistant.";
-            source = "";
+            reply = `I hear you, and I want to acknowledge what you are sharing. Even though every experience is unique, please remember that your feelings are completely valid and you do not have to carry everything alone.\n\nTake things one small step at a time. Would you like to share a little more about what has been on your mind, or would you like to try a calming grounding exercise together?`;
           }
-        }
-      } catch (ragErr) {
-        console.error('RAG service error, using safe fallback:', ragErr);
-        // Fallback to local curated knowledge if RAG service encounters unexpected system fault
-        const matchedDoc = retrieveKnowledge(userText);
-        if (matchedDoc) {
-          source = "";
-          reply = `Thank you for sharing this. Based on evidence-grounded wellness strategies, here is guidance tailored to what you described:\n\n${matchedDoc.content}\n\nTake this one moment at a time. Would you like to try a gentle relaxation exercise together, or would you like to unpack any part of this?`;
-        } else {
-          reply = "I could not find enough information to answer this question in the documents provided to MentalHealth Assistant.";
-          source = "";
         }
       }
 
