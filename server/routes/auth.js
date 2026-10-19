@@ -8,7 +8,7 @@ const { requireAuth, JWT_SECRET } = require('../middleware/auth');
 const { authLimiter } = require('../middleware/rateLimit');
 
 // In-memory fallback if MongoDB is offline
-const memoryUsers = [];
+const { memUsers } = require('../config/memStore');
 
 // Register
 router.post('/register', authLimiter, async (req, res) => {
@@ -62,7 +62,7 @@ router.post('/register', authLimiter, async (req, res) => {
     } catch (dbErr) {
       console.warn('DB write failed, using in-memory fallback:', dbErr.message);
 
-      const existingMem = memoryUsers.find(u => u.email === normalizedEmail);
+      const existingMem = memUsers.find(u => u.email === normalizedEmail);
       if (existingMem) {
         return res.status(409).json({ error: 'Conflict', message: 'An account with this email already exists' });
       }
@@ -78,7 +78,7 @@ router.post('/register', authLimiter, async (req, res) => {
         dob: dob || null,
         preferences: { darkMode: false, moodReminders: true, saveHistory: true, showCitations: true }
       };
-      memoryUsers.push(memUser);
+      memUsers.push(memUser);
 
       const token = jwt.sign(
         { id: memUser.id, email: memUser.email, name: memUser.name },
@@ -147,7 +147,7 @@ router.post('/login', authLimiter, async (req, res) => {
     }
 
     // In-memory fallback
-    const memUser = memoryUsers.find(u => u.email === normalizedEmail);
+    const memUser = memUsers.find(u => u.email === normalizedEmail);
     if (memUser) {
       const isMatch = await bcrypt.compare(password, memUser.password);
       if (!isMatch) {
@@ -188,7 +188,7 @@ router.get('/me', requireAuth, async (req, res) => {
       if (user) return res.json({ user });
     } catch {}
 
-    const memUser = memoryUsers.find(u => u.id === req.user.id);
+    const memUser = memUsers.find(u => u.id === req.user.id);
     if (memUser) {
       const { password, ...safeUser } = memUser;
       return res.json({ user: safeUser });

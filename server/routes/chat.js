@@ -5,6 +5,8 @@ const { optionalAuth } = require('../middleware/auth');
 const { chatLimiter } = require('../middleware/rateLimit');
 const Message = require('../models/Message');
 const Conversation = require('../models/Conversation');
+const mongoose = require('mongoose');
+const { getMemConversations, memMessages } = require('../config/memStore');
 
 // Crisis keywords
 const CRISIS_KEYWORDS = [
@@ -126,10 +128,15 @@ Please reach out to one of these numbers or a trusted loved one right now.`;
       reply = `Of course, I am right here and listening. Please feel free to share whatever is on your mind — whether you are going through a difficult situation, feeling stressed or low, or just need a safe space to express yourself. Take your time, I am here to support you.`;
       source = '';
     } else {
-      // Execute Retrieval-Augmented Generation (RAG) over PDF knowledge base
+      // Execute Retrieval-Augmented Generation (RAG) over knowledge base
       try {
         const ragResult = await queryRAG(userText);
-        if (ragResult && ragResult.reply) {
+        const isAbstention = !ragResult || !ragResult.reply ||
+          ragResult.reply.trim().length < 60 ||
+          ragResult.reply.includes("could not find enough information") ||
+          ragResult.reply.includes("documents provided to MentalHealth Assistant");
+
+        if (ragResult && ragResult.reply && !isAbstention) {
           reply = ragResult.reply;
           source = '';
           citations = [];
@@ -137,8 +144,18 @@ Please reach out to one of these numbers or a trusted loved one right now.`;
             disclaimer = ragResult.disclaimer;
           }
         } else {
-          reply = "I could not find enough information to answer this question in the documents provided to MentalHealth Assistant.";
-          source = "";
+          // If RAG abstained or returned empty, check curated grounded knowledge base
+          const matchedDoc = retrieveKnowledge(userText);
+          if (matchedDoc) {
+            source = "";
+            reply = `Thank you for sharing this. Based on evidence-grounded wellness strategies, here is guidance tailored to what you described:\n\n${matchedDoc.content}\n\nTake this one moment at a time. Would you like to try a gentle relaxation exercise together, or would you like to unpack any part of this?`;
+          } else if (ragResult && ragResult.reply) {
+            reply = ragResult.reply;
+            source = "";
+          } else {
+            reply = "I could not find enough information to answer this question in the documents provided to MentalHealth Assistant.";
+            source = "";
+          }
         }
       } catch (ragErr) {
         console.error('RAG service error, using safe fallback:', ragErr);
@@ -146,7 +163,7 @@ Please reach out to one of these numbers or a trusted loved one right now.`;
         const matchedDoc = retrieveKnowledge(userText);
         if (matchedDoc) {
           source = "";
-          reply = `Thank you for sharing this. Based on wellness strategies, here is guidance tailored to what you described:\n\n${matchedDoc.content}\n\nTake this one moment at a time. Would you like to try a gentle relaxation exercise together, or would you like to unpack any part of this?`;
+          reply = `Thank you for sharing this. Based on evidence-grounded wellness strategies, here is guidance tailored to what you described:\n\n${matchedDoc.content}\n\nTake this one moment at a time. Would you like to try a gentle relaxation exercise together, or would you like to unpack any part of this?`;
         } else {
           reply = "I could not find enough information to answer this question in the documents provided to MentalHealth Assistant.";
           source = "";
@@ -162,40 +179,76 @@ Please reach out to one of these numbers or a trusted loved one right now.`;
       }
     }
 
-    // Attempt DB logging to MongoDB Atlas
+    // Attempt DB logging to MongoDB Atlas if connected, otherwise fallback to in-memory store
     let finalConvId = conversationId;
-    try {
-      let convDoc = null;
-      if (conversationId && conversationId.match(/^[0-9a-fA-F]{24}$/)) {
-        convDoc = await Conversation.findById(conversationId);
-      }
-      if (!convDoc) {
-        convDoc = await Conversation.create({
-          userId: req.user ? req.user.id : null,
-          guestId: req.headers['x-guest-session-id'] || null,
-          title: userText ? (userText.length > 28 ? userText.slice(0, 28) + '...' : userText) : 'New Conversation'
-        });
-      }
+    if (mongoose.connection.readyState === 1) {
+      try {
+        let convDoc = null;
+        if (conversationId && conversationId.match(/^[0-9a-fA-F]{24}$/)) {
+          convDoc = await Conversation.findById(conversationId);
+        }
+        if (!convDoc) {
+          convDoc = await Conversation.create({
+            userId: req.user ? req.user.id : null,
+            guestId: req.headers['x-guest-session-id'] || null,
+            title: userText ? (userText.length > 28 ? userText.slice(0, 28) + '...' : userText) : 'New Conversation'
+          });
+        }
 
-      if (convDoc) {
-        finalConvId = convDoc._id.toString();
-        await Message.create({
-          conversationId: convDoc._id,
-          sender: 'user',
-          text: userText
-        });
+        if (convDoc) {
+          finalConvId = convDoc._id.toString();
+          await Message.create({
+            conversationId: convDoc._id,
+            sender: 'user',
+            text: userText
+          });
 
-        await Message.create({
-          conversationId: convDoc._id,
-          sender: 'assistant',
-          text: reply,
-          source,
-          isCrisis
-        });
-        await Conversation.findByIdAndUpdate(convDoc._id, { updatedAt: new Date() });
+          await Message.create({
+            conversationId: convDoc._id,
+            sender: 'assistant',
+            text: reply,
+            source,
+            isCrisis
+          });
+          await Conversation.findByIdAndUpdate(convDoc._id, { updatedAt: new Date() });
+        }
+      } catch (dbErr) {
+        console.warn('DB logging error (skipped):', dbErr.message);
       }
-    } catch (dbErr) {
-      console.warn('DB logging error (skipped):', dbErr.message);
+    }
+
+    // Fallback store when MongoDB Atlas is offline or disconnected
+    if (!finalConvId) {
+      finalConvId = conversationId || 'conv_' + Date.now();
+      const userId = req.user ? req.user.id : null;
+      const guestId = req.headers['x-guest-session-id'] || null;
+      const memConvs = getMemConversations();
+      let memConv = memConvs.find(c => c.id === finalConvId);
+      if (!memConv) {
+        memConv = {
+          id: finalConvId,
+          userId,
+          guestId,
+          title: userText ? (userText.length > 28 ? userText.slice(0, 28) + '...' : userText) : 'New Conversation',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        memConvs.unshift(memConv);
+      }
+      memMessages.push({
+        conversationId: finalConvId,
+        sender: 'user',
+        text: userText,
+        timestamp: new Date()
+      });
+      memMessages.push({
+        conversationId: finalConvId,
+        sender: 'assistant',
+        text: reply,
+        source,
+        isCrisis,
+        timestamp: new Date()
+      });
     }
 
     res.json({

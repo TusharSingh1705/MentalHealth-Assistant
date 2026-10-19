@@ -40,11 +40,41 @@ class MindCareRAGPipeline:
         self.reranker = SimpleReranker()
         self.chroma_collection = None
         self.cached_chunks = []
+        self.kb_chunks = []
+        self._load_kb_markdown()
         self._init_retriever()
         try:
             self.reranker._load_model()
         except Exception:
             pass
+
+    def _load_kb_markdown(self):
+        """Load curated markdown knowledge base files (sleep, CBT, mindfulness, stress)."""
+        kb_dir = Path(__file__).parent / "knowledge_base"
+        if not kb_dir.exists():
+            return
+        for md_file in kb_dir.glob("*.md"):
+            if md_file.name.lower() == "readme.md":
+                continue
+            try:
+                content = md_file.read_text(encoding="utf-8").strip()
+                # Split content into rich sections by headers
+                raw_sections = re.split(r'\n(?=#{1,3}\s+)', content)
+                for sec in raw_sections:
+                    sec = sec.strip()
+                    if len(sec) < 80:
+                        continue
+                    first_line = sec.split("\n")[0].replace("#", "").strip()
+                    self.kb_chunks.append({
+                        "text": sec,
+                        "metadata": {
+                            "source": md_file.name,
+                            "title": first_line or md_file.stem.replace("_", " ").title(),
+                            "page": 1
+                        }
+                    })
+            except Exception:
+                pass
 
     def _init_retriever(self):
         try:
@@ -128,6 +158,18 @@ class MindCareRAGPipeline:
                     })
             candidates.sort(key=lambda x: x.get("score", 0), reverse=True)
             candidates = candidates[:top_k]
+
+        # Augment with matching knowledge base markdown passages (sleep, CBT, mindfulness, stress)
+        q_tokens = set(re.findall(r'[a-zA-Z]{3,}', query.lower()))
+        for kb_item in self.kb_chunks:
+            text_lower = kb_item["text"].lower()
+            overlap = sum(1 for tok in q_tokens if tok in text_lower)
+            if overlap >= 2 or (len(q_tokens) <= 2 and overlap >= 1):
+                candidates.append({
+                    "text": kb_item["text"],
+                    "metadata": kb_item["metadata"],
+                    "distance": max(0.1, 0.65 - (overlap * 0.1))
+                })
 
         # Apply reranking across retrieved candidates
         reranked = self.reranker.rerank(query, candidates, top_k=min(top_k, 4))
@@ -225,8 +267,8 @@ You must strictly follow these instructions:
 - Structure your response primarily in natural, conversational, flowing paragraphs.
 - DO NOT always use bullet points or numbered lists. Only use bullet points when the user asks for specific steps, a checklist, or when offering 2-3 distinct practical exercises/techniques where a list genuinely aids readability.
 - Be respectful, non-judgmental, and empathetic.
-- Answer factual questions using the mental health knowledge base provided below.
-- Do NOT guess or extrapolate beyond the provided text. If the documents do not contain enough information to answer the question, state honestly: "{ABSTENTION_RESPONSE}"
+- Provide practical, evidence-based wellness strategies (such as sleep hygiene, CBT reframing, grounding exercises, breathing techniques, and stress management) based on the knowledge base provided below.
+- Only output "{ABSTENTION_RESPONSE}" if the user asks a completely unrelated question outside mental health, wellness, and emotional coping (such as sports, coding, cooking, finance, or geography).
 - Never diagnose a mental-health condition or recommend medication.
 - For crisis or immediate safety concerns, prioritize appropriate human and emergency support.
 
@@ -256,9 +298,8 @@ RESPONSE:"""
                         if response and response.text:
                             break
                     except Exception as mod_err:
-                        if "429" in str(mod_err) or "NotFound" in str(mod_err):
-                            continue
-                        raise mod_err
+                        print(f"Model candidate {candidate} error: {mod_err}", file=sys.stderr)
+                        continue
 
                 if response and response.text:
                     reply_text = response.text.strip()
@@ -287,31 +328,18 @@ RESPONSE:"""
             except Exception as e:
                 print(f"Gemini API generation error: {e}", file=sys.stderr)
 
-        # 2. Grounded Extractive Fallback (Strictly based on retrieved PDF passages)
-        top_chunk = context_chunks[0]
-        meta = top_chunk.get("metadata", {})
-        src = meta.get("source", "PDF Document")
-        title = meta.get("title", src)
-        passage = top_chunk.get("text", "").strip()
+        # 2. Grounded Extractive Fallback (Strictly based on retrieved passages)
+        informative_chunks = [c for c in context_chunks if len(c.get("text", "").strip()) >= 80]
+        if not informative_chunks:
+            informative_chunks = context_chunks
 
-        # Check keyword relevance before emitting extractive fallback
-        q_tokens = [w for w in re.findall(r'[a-zA-Z]{3,}', query.lower()) if w not in {"what", "how", "can", "tell", "explain", "about"}]
-        passage_lower = passage.lower()
-        has_overlap = any(w in passage_lower for w in q_tokens)
-
-        if not has_overlap:
-            return {
-                "reply": ABSTENTION_RESPONSE,
-                "source": "",
-                "citations": [],
-                "disclaimer": DISCLAIMER_TEXT
-            }
-
-        # Build clean extractive reply directly without document names or source citations
-        clean_passage = re.sub(r'\[Source:\s*[^\]]+\]', '', passage, flags=re.IGNORECASE)
-        clean_passage = re.sub(r'\(Source:\s*[^)]+\)', '', clean_passage, flags=re.IGNORECASE)
-        clean_passage = re.sub(r'Source:\s*[\w\s.-]+\.pdf', '', clean_passage, flags=re.IGNORECASE)
-        reply = clean_passage.strip()
+        selected = informative_chunks[:2]
+        passages = [c.get("text", "").strip() for c in selected]
+        combined = "\n\n".join(passages)
+        clean = re.sub(r'\[Source:\s*[^\]]+\]', '', combined, flags=re.IGNORECASE)
+        clean = re.sub(r'\(Source:\s*[^)]+\)', '', clean, flags=re.IGNORECASE)
+        clean = re.sub(r'Source:\s*[\w\s.-]+\.pdf', '', clean, flags=re.IGNORECASE)
+        reply = clean.strip() if clean.strip() else ABSTENTION_RESPONSE
 
         return {
             "reply": reply,

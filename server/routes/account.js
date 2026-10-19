@@ -5,6 +5,7 @@ const { requireAuth } = require('../middleware/auth');
 const User = require('../models/User');
 const Conversation = require('../models/Conversation');
 const Message = require('../models/Message');
+const { memUsers, getMemConversations, setMemConversations } = require('../config/memStore');
 
 // Update profile preferences or contact details
 router.patch('/profile', requireAuth, async (req, res) => {
@@ -19,9 +20,16 @@ router.patch('/profile', requireAuth, async (req, res) => {
     try {
       if (req.user.id && req.user.id.match(/^[0-9a-fA-F]{24}$/)) {
         const user = await User.findByIdAndUpdate(req.user.id, updateData, { new: true }).select('-password');
-        return res.json({ message: 'Profile updated', user });
+        if (user) return res.json({ message: 'Profile updated', user });
       }
     } catch {}
+
+    const memUser = memUsers.find(u => u.id === req.user.id);
+    if (memUser) {
+      Object.assign(memUser, updateData);
+      const { password, ...safeUser } = memUser;
+      return res.json({ message: 'Profile updated successfully', user: safeUser });
+    }
 
     res.json({ message: 'Profile updated successfully', user: { ...req.user, ...updateData } });
   } catch (error) {
@@ -74,9 +82,20 @@ router.get('/export', requireAuth, async (req, res) => {
       }
     } catch {}
 
+    if (!userData || !userData.name) {
+      const memUser = memUsers.find(u => u.id === userId);
+      if (memUser) {
+        const { password, ...safeUser } = memUser;
+        userData = safeUser;
+      }
+    }
+    if (!conversations || conversations.length === 0) {
+      conversations = getMemConversations().filter(c => c.userId === userId);
+    }
+
     res.json({
       exportMetadata: {
-        platform: 'MindCare AI',
+        platform: 'MentalHealth Assistant',
         exportedAt: new Date().toISOString(),
         version: '1.0'
       },
@@ -102,6 +121,10 @@ router.delete('/', requireAuth, async (req, res) => {
         await Conversation.deleteMany({ userId });
       }
     } catch {}
+
+    const uIdx = memUsers.findIndex(u => u.id === userId);
+    if (uIdx !== -1) memUsers.splice(uIdx, 1);
+    setMemConversations(getMemConversations().filter(c => c.userId !== userId));
 
     res.json({ message: 'Account and associated conversations permanently deleted' });
   } catch (error) {

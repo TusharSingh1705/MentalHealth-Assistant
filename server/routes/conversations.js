@@ -6,7 +6,7 @@ const Conversation = require('../models/Conversation');
 const Message = require('../models/Message');
 
 // In-memory store fallback
-let memConversations = [];
+const { getMemConversations, setMemConversations } = require('../config/memStore');
 
 // List conversations
 router.get('/', optionalAuth, async (req, res) => {
@@ -19,6 +19,7 @@ router.get('/', optionalAuth, async (req, res) => {
       const convs = await Conversation.find(query).sort({ updatedAt: -1 }).limit(30);
       return res.json({ conversations: convs });
     } catch {
+      const memConversations = getMemConversations();
       const filtered = memConversations.filter(c => (userId && c.userId === userId) || (guestId && c.guestId === guestId));
       return res.json({ conversations: filtered });
     }
@@ -50,7 +51,8 @@ router.post('/', optionalAuth, async (req, res) => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
-      memConversations.unshift(newConv);
+      const memConvs = getMemConversations();
+      memConvs.unshift(newConv);
       return res.status(201).json({ conversation: newConv });
     }
   } catch (error) {
@@ -75,7 +77,7 @@ router.patch('/:id', optionalAuth, async (req, res) => {
       );
       return res.json({ conversation: conv });
     } catch {
-      const conv = memConversations.find(c => c.id === id);
+      const conv = getMemConversations().find(c => c.id === id);
       if (conv) conv.title = title.trim();
       return res.json({ conversation: conv });
     }
@@ -92,7 +94,7 @@ router.delete('/:id', optionalAuth, async (req, res) => {
       await Conversation.findByIdAndDelete(id);
       await Message.deleteMany({ conversationId: id });
     } catch {
-      memConversations = memConversations.filter(c => c.id !== id);
+      setMemConversations(getMemConversations().filter(c => c.id !== id));
     }
     res.json({ message: 'Conversation deleted successfully' });
   } catch (error) {
@@ -113,7 +115,7 @@ router.delete('/', optionalAuth, async (req, res) => {
       await Conversation.deleteMany(query);
       await Message.deleteMany({ conversationId: { $in: ids } });
     } catch {
-      memConversations = memConversations.filter(c => !((userId && c.userId === userId) || (guestId && c.guestId === guestId)));
+      setMemConversations(getMemConversations().filter(c => !((userId && c.userId === userId) || (guestId && c.guestId === guestId))));
     }
     res.json({ message: 'All conversations cleared successfully' });
   } catch (error) {

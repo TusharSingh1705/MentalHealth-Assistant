@@ -26,9 +26,9 @@ app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 // Apply basic rate limiting across API endpoints
 app.use('/api', generalLimiter);
 
-// Serve frontend static assets from public/
-const publicDir = path.join(__dirname, '..', 'public');
-app.use(express.static(publicDir));
+// Serve frontend static assets from client/
+const clientDir = path.join(__dirname, '..', 'client');
+app.use(express.static(clientDir));
 
 // API endpoints
 app.use('/api/auth', authRoutes);
@@ -51,7 +51,7 @@ app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api')) {
     return res.status(404).json({ error: 'Not Found', message: `Route ${req.originalUrl} does not exist` });
   }
-  res.sendFile(path.join(publicDir, 'index.html'));
+  res.sendFile(path.join(clientDir, 'index.html'));
 });
 
 // Centralized error handler
@@ -67,7 +67,7 @@ app.use((err, req, res, next) => {
 
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
-    console.log(`MindCare AI server listening on http://localhost:${PORT}`);
+    console.log(`MentalHealth Assistant server listening on http://localhost:${PORT}`);
   });
 }
 
