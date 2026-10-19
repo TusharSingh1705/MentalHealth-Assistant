@@ -73,20 +73,6 @@ The application uses a dual-database design tailored for privacy, fast conversat
 
 ---
 
-## RAG Pipeline (Optional)
-
-To index reference documents and run evaluations:
-
-```bash
-# Ingest PDF documents into ChromaDB
-npm run rag:ingest
-
-# Run retrieval and safety evaluation
-npm run rag:evaluate
-```
-
----
-
 ## Disclaimer
 
 MentalHealth Assistant is an educational self-care tool. It does not provide clinical diagnosis, psychiatric therapy, or emergency services.
