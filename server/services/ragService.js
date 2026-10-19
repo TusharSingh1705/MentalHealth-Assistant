@@ -3,7 +3,7 @@ const { spawn } = require('child_process');
 const path = require('path');
 const readline = require('readline');
 
-const PYTHON_BIN = process.env.PYTHON_PATH || 'python';
+const PYTHON_BIN = process.env.PYTHON_PATH || (process.platform === 'win32' ? 'python' : 'python3');
 const RAG_SCRIPT = process.env.RAG_SCRIPT_PATH 
   ? path.resolve(process.env.RAG_SCRIPT_PATH)
   : path.resolve(__dirname, '../../rag/pipeline.py');

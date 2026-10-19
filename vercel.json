@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "outputDirectory": "client",
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://mentalhealth-assistant.onrender.com/api/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/$1"
+    }
+  ]
+}
