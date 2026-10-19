@@ -76,32 +76,8 @@ function initLoginForm(form) {
         window.location.href = 'chat.html';
       }, 700);
     } catch (err) {
-      console.warn('API login failed or offline, falling back to local simulation:', err.message);
-      // Fallback for standalone demo: check local registered users or test credentials
-      const localUsers = Storage.get('registered_users') || [];
-      const match = localUsers.find(u => u.email.toLowerCase() === emailVal.toLowerCase());
-      
-      if (match && match.password === passVal) {
-        const dummyToken = 'jwt_mock_' + Utils.generateId();
-        const { password, ...safeUser } = match;
-        AuthManager.login(safeUser, dummyToken);
-        Toast.success('Welcome back!', `Signed in as ${match.name}`);
-        setTimeout(() => { window.location.href = 'chat.html'; }, 700);
-      } else if (!match && (passVal.length >= 6)) {
-        // Allow seamless login demo
-        const demoUser = {
-          id: Utils.generateId(),
-          name: emailVal.split('@')[0],
-          email: emailVal,
-          joined: new Date().toISOString()
-        };
-        const dummyToken = 'jwt_mock_' + Utils.generateId();
-        AuthManager.login(demoUser, dummyToken);
-        Toast.success('Welcome back!', `Signed in as ${demoUser.name}`);
-        setTimeout(() => { window.location.href = 'chat.html'; }, 700);
-      } else {
-        Toast.error('Login Failed', err.message || 'Invalid email or password');
-      }
+      console.warn('API login failed:', err.message);
+      Toast.error('Login Failed', err.message || 'Invalid email or password. Please sign up if you do not have an account.');
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Log In';
@@ -215,36 +191,8 @@ function initRegisterForm(form) {
         window.location.href = 'chat.html';
       }, 700);
     } catch (err) {
-      console.warn('API register failed, saving locally for client demo:', err.message);
-      // Fallback local registration
-      const localUsers = Storage.get('registered_users') || [];
-      const exists = localUsers.find(u => u.email.toLowerCase() === emailVal.toLowerCase());
-      if (exists) {
-        Toast.error('Registration Error', 'An account with this email already exists.');
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Create Account';
-        return;
-      }
-
-      const newUser = {
-        id: Utils.generateId(),
-        name: nameVal,
-        email: emailVal,
-        dob: dobInput ? dobInput.value : '',
-        password: passVal,
-        joined: new Date().toISOString()
-      };
-      localUsers.push(newUser);
-      Storage.set('registered_users', localUsers);
-
-      const dummyToken = 'jwt_mock_' + Utils.generateId();
-      const { password, ...safeUser } = newUser;
-      AuthManager.login(safeUser, dummyToken);
-
-      Toast.success('Account Created!', `Welcome to MentalHealth Assistant, ${nameVal}`);
-      setTimeout(() => {
-        window.location.href = 'chat.html';
-      }, 700);
+      console.warn('API register failed:', err.message);
+      Toast.error('Registration Failed', err.message || 'Could not create account. Please check your details and try again.');
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Create Account';
