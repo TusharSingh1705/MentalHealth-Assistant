@@ -32,8 +32,11 @@ function initLoginForm(form) {
   const passwordError = document.getElementById('loginPasswordError');
   const submitBtn = document.getElementById('loginSubmit');
 
+  const formAlert = document.getElementById('loginFormAlert');
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (formAlert) formAlert.style.display = 'none';
     let isValid = true;
 
     // Validate email
@@ -77,7 +80,12 @@ function initLoginForm(form) {
       }, 700);
     } catch (err) {
       console.warn('API login failed:', err.message);
-      Toast.error('Login Failed', err.message || 'Invalid email or password. Please sign up if you do not have an account.');
+      if (formAlert) {
+        formAlert.textContent = err.message || 'Invalid email or password. Please check your credentials or sign up.';
+        formAlert.style.display = 'block';
+      } else {
+        Toast.error('Login Failed', err.message || 'Invalid email or password');
+      }
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Log In';
@@ -85,13 +93,19 @@ function initLoginForm(form) {
   });
 
   // Real-time input clear error
+  const clearErrors = () => {
+    if (formAlert) formAlert.style.display = 'none';
+  };
+
   emailInput.addEventListener('input', () => {
     emailInput.classList.remove('invalid');
     if (emailError) emailError.style.display = 'none';
+    clearErrors();
   });
   passwordInput.addEventListener('input', () => {
     passwordInput.classList.remove('invalid');
     if (passwordError) passwordError.style.display = 'none';
+    clearErrors();
   });
 }
 
@@ -172,6 +186,9 @@ function initRegisterForm(form) {
       if (confirmError) confirmError.style.display = 'none';
     }
 
+    const formAlert = document.getElementById('registerFormAlert');
+    if (formAlert) formAlert.style.display = 'none';
+
     if (!isValid) return;
 
     submitBtn.disabled = true;
@@ -192,7 +209,12 @@ function initRegisterForm(form) {
       }, 700);
     } catch (err) {
       console.warn('API register failed:', err.message);
-      Toast.error('Registration Failed', err.message || 'Could not create account. Please check your details and try again.');
+      if (formAlert) {
+        formAlert.textContent = err.message || 'Could not create account. Please check your details and try again.';
+        formAlert.style.display = 'block';
+      } else {
+        Toast.error('Registration Failed', err.message || 'Could not create account.');
+      }
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Create Account';
@@ -203,6 +225,8 @@ function initRegisterForm(form) {
     if (!inp) return;
     inp.addEventListener('input', () => {
       inp.classList.remove('invalid');
+      const formAlert = document.getElementById('registerFormAlert');
+      if (formAlert) formAlert.style.display = 'none';
     });
   });
 }

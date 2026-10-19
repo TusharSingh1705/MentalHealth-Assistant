@@ -227,6 +227,21 @@ body.auth-body {
   color: var(--primary-700);
 }
 
+.auth-form-alert {
+  display: none;
+  background: rgba(225, 29, 72, 0.08);
+  border: 1px solid rgba(225, 29, 72, 0.28);
+  color: var(--rose-600);
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.86rem;
+  font-weight: 500;
+  text-align: center;
+  margin-top: 10px;
+  line-height: 1.4;
+  animation: fadeIn 0.2s ease;
+}
+
 @media (max-width: 480px) {
   .auth-card {
     padding: 30px 22px;
